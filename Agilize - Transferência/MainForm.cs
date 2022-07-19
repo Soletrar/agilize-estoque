@@ -310,8 +310,8 @@ public partial class MainForm : Form
 
                     _chromeDriver.FindElement(By.Name("novo_saldo"))
                         .SendKeys(add
-                            ? (quantidadeAtual + quantidade).ToString()
-                            : (quantidadeAtual - quantidadeEditavel).ToString());
+                            ? (quantidadeAtual + quantidade) + "00"
+                            : (quantidadeAtual - quantidadeEditavel) + "00");
 
                     _chromeDriver.FindElement(By.Name("motivo_ajuste"))
                         .SendKeys($"Solicitado por e-mail - {_name}"); // motivo do ajuste
@@ -430,8 +430,8 @@ public partial class MainForm : Form
 
                     _chromeDriver.FindElement(By.Name("novo_saldo"))
                         .SendKeys(add
-                            ? (quantidadeAtual + quantidade).ToString()
-                            : (quantidadeAtual - quantidadeEditavel).ToString());
+                            ? (quantidadeAtual + quantidade) + "00"
+                            : (quantidadeAtual - quantidadeEditavel) + "00");
 
                     _chromeDriver.FindElement(By.Name("motivo_ajuste"))
                         .SendKeys($"Solicitado por e-mail - {_name}"); // motivo do ajuste
