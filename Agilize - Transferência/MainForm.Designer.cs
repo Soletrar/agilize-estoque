@@ -49,9 +49,16 @@
             this.cbboxBaixaStock = new System.Windows.Forms.ComboBox();
             this.label6 = new System.Windows.Forms.Label();
             this.cbboxBaixaFranchise = new System.Windows.Forms.ComboBox();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.btnStartAdicao = new System.Windows.Forms.Button();
+            this.label8 = new System.Windows.Forms.Label();
+            this.cbboxAdicaoStock = new System.Windows.Forms.ComboBox();
+            this.label9 = new System.Windows.Forms.Label();
+            this.cbboxAdicaoFranchise = new System.Windows.Forms.ComboBox();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
+            this.groupBox4.SuspendLayout();
             this.SuspendLayout();
             // 
             // cbboxFrom
@@ -203,9 +210,9 @@
             this.groupBox3.Controls.Add(this.cbboxBaixaStock);
             this.groupBox3.Controls.Add(this.label6);
             this.groupBox3.Controls.Add(this.cbboxBaixaFranchise);
-            this.groupBox3.Location = new System.Drawing.Point(12, 195);
+            this.groupBox3.Location = new System.Drawing.Point(12, 206);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(430, 143);
+            this.groupBox3.Size = new System.Drawing.Size(333, 200);
             this.groupBox3.TabIndex = 10;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "Baixa de estoque";
@@ -213,9 +220,9 @@
             // btnStartBaixa
             // 
             this.btnStartBaixa.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.btnStartBaixa.Location = new System.Drawing.Point(16, 91);
+            this.btnStartBaixa.Location = new System.Drawing.Point(16, 146);
             this.btnStartBaixa.Name = "btnStartBaixa";
-            this.btnStartBaixa.Size = new System.Drawing.Size(394, 36);
+            this.btnStartBaixa.Size = new System.Drawing.Size(302, 36);
             this.btnStartBaixa.TabIndex = 5;
             this.btnStartBaixa.Text = "INICIAR";
             this.btnStartBaixa.UseVisualStyleBackColor = true;
@@ -224,7 +231,7 @@
             // label7
             // 
             this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(226, 30);
+            this.label7.Location = new System.Drawing.Point(16, 87);
             this.label7.Name = "label7";
             this.label7.Size = new System.Drawing.Size(49, 15);
             this.label7.TabIndex = 12;
@@ -234,9 +241,9 @@
             // 
             this.cbboxBaixaStock.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.cbboxBaixaStock.FormattingEnabled = true;
-            this.cbboxBaixaStock.Location = new System.Drawing.Point(226, 51);
+            this.cbboxBaixaStock.Location = new System.Drawing.Point(16, 108);
             this.cbboxBaixaStock.Name = "cbboxBaixaStock";
-            this.cbboxBaixaStock.Size = new System.Drawing.Size(184, 23);
+            this.cbboxBaixaStock.Size = new System.Drawing.Size(302, 23);
             this.cbboxBaixaStock.TabIndex = 11;
             // 
             // label6
@@ -254,15 +261,77 @@
             this.cbboxBaixaFranchise.FormattingEnabled = true;
             this.cbboxBaixaFranchise.Location = new System.Drawing.Point(16, 51);
             this.cbboxBaixaFranchise.Name = "cbboxBaixaFranchise";
-            this.cbboxBaixaFranchise.Size = new System.Drawing.Size(184, 23);
+            this.cbboxBaixaFranchise.Size = new System.Drawing.Size(302, 23);
             this.cbboxBaixaFranchise.TabIndex = 9;
+            // 
+            // groupBox4
+            // 
+            this.groupBox4.Controls.Add(this.btnStartAdicao);
+            this.groupBox4.Controls.Add(this.label8);
+            this.groupBox4.Controls.Add(this.cbboxAdicaoStock);
+            this.groupBox4.Controls.Add(this.label9);
+            this.groupBox4.Controls.Add(this.cbboxAdicaoFranchise);
+            this.groupBox4.Location = new System.Drawing.Point(351, 206);
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.Size = new System.Drawing.Size(345, 200);
+            this.groupBox4.TabIndex = 13;
+            this.groupBox4.TabStop = false;
+            this.groupBox4.Text = "Adição de estoque";
+            // 
+            // btnStartAdicao
+            // 
+            this.btnStartAdicao.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.btnStartAdicao.Location = new System.Drawing.Point(16, 146);
+            this.btnStartAdicao.Name = "btnStartAdicao";
+            this.btnStartAdicao.Size = new System.Drawing.Size(312, 36);
+            this.btnStartAdicao.TabIndex = 5;
+            this.btnStartAdicao.Text = "INICIAR";
+            this.btnStartAdicao.UseVisualStyleBackColor = true;
+            this.btnStartAdicao.Click += new System.EventHandler(this.btnStartAdicao_Click);
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(16, 87);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(49, 15);
+            this.label8.TabIndex = 12;
+            this.label8.Text = "Estoque";
+            // 
+            // cbboxAdicaoStock
+            // 
+            this.cbboxAdicaoStock.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbboxAdicaoStock.FormattingEnabled = true;
+            this.cbboxAdicaoStock.Location = new System.Drawing.Point(16, 108);
+            this.cbboxAdicaoStock.Name = "cbboxAdicaoStock";
+            this.cbboxAdicaoStock.Size = new System.Drawing.Size(312, 23);
+            this.cbboxAdicaoStock.TabIndex = 11;
+            // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(16, 30);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(53, 15);
+            this.label9.TabIndex = 10;
+            this.label9.Text = "Franquia";
+            // 
+            // cbboxAdicaoFranchise
+            // 
+            this.cbboxAdicaoFranchise.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cbboxAdicaoFranchise.FormattingEnabled = true;
+            this.cbboxAdicaoFranchise.Location = new System.Drawing.Point(16, 51);
+            this.cbboxAdicaoFranchise.Name = "cbboxAdicaoFranchise";
+            this.cbboxAdicaoFranchise.Size = new System.Drawing.Size(312, 23);
+            this.cbboxAdicaoFranchise.TabIndex = 9;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.White;
-            this.ClientSize = new System.Drawing.Size(708, 346);
+            this.ClientSize = new System.Drawing.Size(708, 420);
+            this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.groupBox3);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.groupBox1);
@@ -279,6 +348,8 @@
             this.groupBox2.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
+            this.groupBox4.ResumeLayout(false);
+            this.groupBox4.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -305,5 +376,11 @@
         private ComboBox cbboxBaixaStock;
         private Label label6;
         private ComboBox cbboxBaixaFranchise;
+        private GroupBox groupBox4;
+        private Button btnStartAdicao;
+        private Label label8;
+        private ComboBox cbboxAdicaoStock;
+        private Label label9;
+        private ComboBox cbboxAdicaoFranchise;
     }
 }

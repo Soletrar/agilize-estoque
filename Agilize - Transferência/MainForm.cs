@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 
@@ -11,20 +12,40 @@ public partial class MainForm : Form
 
     private List<Company> _companies;
 
-    private string _name;
-    private string _password;
     private List<Stock> _stocks;
-    private string _user;
+
+    private Config _config;
 
     public MainForm()
     {
         InitializeComponent();
+
+        if (!File.Exists("config.cfg")) WriteDefaultConfig();
+
+        LoadConfig();
+    }
+
+    private void WriteDefaultConfig()
+    {
+        var config = new Config
+        {
+            Name = "",
+            Login = "",
+            Password = "",
+            ProductsLink = "https://linx.microvix.com.br:8371/gestor_web/produtos/cadastro_produtos.asp"
+        };
+
+        var json = JsonConvert.SerializeObject(config, Formatting.Indented);
+        File.WriteAllText("config.cfg", json);
+    }
+
+    private void LoadConfig()
+    {
+        _config = JsonConvert.DeserializeObject<Config>(File.ReadAllText("config.cfg"));
     }
 
     private void Form1_Load(object sender, EventArgs e)
     {
-        LoadUserData();
-
         LoadControls();
     }
 
@@ -61,16 +82,13 @@ public partial class MainForm : Form
 
         cbboxBaixaStock.Items.AddRange(_stocks.ToArray());
         cbboxBaixaStock.SelectedIndex = random.Next(cbboxBaixaStock.Items.Count);
-    }
 
-    private void LoadUserData()
-    {
-        var data = File.ReadAllText("dados.txt").Trim();
+        // adição de estoque
+        cbboxAdicaoFranchise.Items.AddRange(_companies.ToArray());
+        cbboxAdicaoFranchise.SelectedIndex = random.Next(cbboxAdicaoFranchise.Items.Count);
 
-        var split = data.Split(';');
-        _name = split[0];
-        _user = split[1];
-        _password = split[2];
+        cbboxAdicaoStock.Items.AddRange(_stocks.ToArray());
+        cbboxAdicaoStock.SelectedIndex = random.Next(cbboxAdicaoStock.Items.Count);
     }
 
     private void DisableControls()
@@ -210,6 +228,47 @@ public partial class MainForm : Form
         }
     }
 
+    private async void btnStartAdicao_Click(object sender, EventArgs e)
+    {
+        var franchise = cbboxAdicaoFranchise.SelectedItem as Company;
+        var stock = cbboxAdicaoStock.SelectedItem as Stock;
+
+
+        if (MessageBox.Show($"Você irá adicionar produtos na {franchise} no {stock}. \n\nDeseja continuar?",
+                "Atenção",
+                MessageBoxButtons.YesNo) == DialogResult.Yes)
+        {
+            DisableControls();
+
+            var produtosDictionary = await LoadProductsAsync();
+
+            if (produtosDictionary.Count == 0)
+            {
+                btnStart.Enabled = cbboxFrom.Enabled = cbboxTo.Enabled = true;
+                MessageBox.Show("Você deve especificar os produtos e suas quantidades!");
+                return;
+            }
+
+            await FazTransferenciaDeposito(true, franchise.Xpath, stock.XPath, produtosDictionary);
+
+            TopMost = true;
+
+            if (_productsNotFound.Count > 0)
+            {
+                await File.WriteAllLinesAsync("codigos.txt", _productsNotFound);
+
+                MessageBox.Show(
+                    "Um ou mais produtos não foram alterados. Abra o arquivo codigos.txt para uma lista com os códigos de barras não encontrados.");
+            }
+
+            MessageBox.Show("Adição realizada!");
+
+            TopMost = false;
+
+            EnableControls();
+        }
+    }
+
     private static async Task<Dictionary<string, int>> LoadProductsAsync()
     {
         var dict = new Dictionary<string, int>();
@@ -229,13 +288,16 @@ public partial class MainForm : Form
     {
         _productsNotFound.Clear();
 
-        _chromeDriver = new ChromeDriver();
+        var chromeOptions = new ChromeOptions();
+        chromeOptions.AddExcludedArgument("enable-automation");
+
+        _chromeDriver = new ChromeDriver(chromeOptions);
         _chromeDriver.Manage().Window.Maximize();
 
         _chromeDriver.Url = "https://erp.linx.com.br/";
 
-        _chromeDriver.FindElement(By.Id("f_login")).SendKeys(_user);
-        _chromeDriver.FindElement(By.Id("f_senha")).SendKeys(_password);
+        _chromeDriver.FindElement(By.Id("f_login")).SendKeys(_config.Login);
+        _chromeDriver.FindElement(By.Id("f_senha")).SendKeys(_config.Password);
         _chromeDriver.FindElement(By.XPath("//*[@id=\"form_login\"]/button[1]")).Click();
 
         while (true)
@@ -256,7 +318,7 @@ public partial class MainForm : Form
             var quantidadeEditavel = quantidade;
 
 
-            _chromeDriver.Url = "https://linx.microvix.com.br:8370/gestor_web/produtos/cadastro_produtos.asp";
+            _chromeDriver.Url = _config.ProductsLink;
 
             while (true)
                 try
@@ -310,11 +372,11 @@ public partial class MainForm : Form
 
                     _chromeDriver.FindElement(By.Name("novo_saldo"))
                         .SendKeys(add
-                            ? (quantidadeAtual + quantidade) + "00"
-                            : (quantidadeAtual - quantidadeEditavel) + "00");
+                            ? quantidadeAtual + quantidade + "00"
+                            : quantidadeAtual - quantidadeEditavel + "00");
 
                     _chromeDriver.FindElement(By.Name("motivo_ajuste"))
-                        .SendKeys($"Solicitado por e-mail - {_name}"); // motivo do ajuste
+                        .SendKeys($"Solicitado por e-mail - {_config.Name}"); // motivo do ajuste
                     _chromeDriver
                         .FindElement(
                             By.XPath("/html/body/table/tbody/tr[2]/td/form/table/tbody/tr[6]/td[2]/font/input"))
@@ -346,13 +408,16 @@ public partial class MainForm : Form
     {
         _productsNotFound.Clear();
 
-        _chromeDriver = new ChromeDriver();
+        var chromeOptions = new ChromeOptions();
+        chromeOptions.AddExcludedArgument("enable-automation");
+
+        _chromeDriver = new ChromeDriver(chromeOptions);
         _chromeDriver.Manage().Window.Maximize();
 
         _chromeDriver.Url = "https://erp.linx.com.br/";
 
-        _chromeDriver.FindElement(By.Id("f_login")).SendKeys(_user);
-        _chromeDriver.FindElement(By.Id("f_senha")).SendKeys(_password);
+        _chromeDriver.FindElement(By.Id("f_login")).SendKeys(_config.Login);
+        _chromeDriver.FindElement(By.Id("f_senha")).SendKeys(_config.Password);
         _chromeDriver.FindElement(By.XPath("//*[@id=\"form_login\"]/button[1]")).Click();
 
         while (true)
@@ -372,8 +437,7 @@ public partial class MainForm : Form
         {
             var quantidadeEditavel = quantidade;
 
-
-            _chromeDriver.Url = "https://linx.microvix.com.br:8370/gestor_web/produtos/cadastro_produtos.asp";
+            _chromeDriver.Url = _config.ProductsLink;
 
             while (true)
                 try
@@ -430,11 +494,11 @@ public partial class MainForm : Form
 
                     _chromeDriver.FindElement(By.Name("novo_saldo"))
                         .SendKeys(add
-                            ? (quantidadeAtual + quantidade) + "00"
-                            : (quantidadeAtual - quantidadeEditavel) + "00");
+                            ? quantidadeAtual + quantidade + "00"
+                            : quantidadeAtual - quantidadeEditavel + "00");
 
                     _chromeDriver.FindElement(By.Name("motivo_ajuste"))
-                        .SendKeys($"Solicitado por e-mail - {_name}"); // motivo do ajuste
+                        .SendKeys($"Solicitado por e-mail - {_config.Name}"); // motivo do ajuste
                     _chromeDriver
                         .FindElement(
                             By.XPath("/html/body/table/tbody/tr[2]/td/form/table/tbody/tr[6]/td[2]/font/input"))
