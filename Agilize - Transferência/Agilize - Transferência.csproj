@@ -11,24 +11,21 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <None Remove="chromedriver.exe"/>
+        <None Remove="chromedriver.exe" />
     </ItemGroup>
 
     <ItemGroup>
         <Content Include="chromedriver.exe">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
-        <Content Include="logo-small.ico"/>
+        <Content Include="logo-small.ico" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Selenium.WebDriver" Version="4.3.0"/>
+        <PackageReference Include="Selenium.WebDriver" Version="4.3.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Update="dados.txt">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
         <None Update="produtos.txt">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
