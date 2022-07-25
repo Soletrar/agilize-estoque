@@ -1,6 +1,7 @@
-﻿using Newtonsoft.Json;
+﻿
+using Newtonsoft.Json;
 
-namespace Agilize___Transferência;
+namespace Agilize___Transferência.Models;
 
 internal struct Config
 {

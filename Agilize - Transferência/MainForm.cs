@@ -1,3 +1,4 @@
+using Agilize___Transferência.Models;
 using Newtonsoft.Json;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
@@ -8,13 +9,11 @@ public partial class MainForm : Form
 {
     private readonly List<string> _productsNotFound = new();
 
-    private ChromeDriver _chromeDriver;
-
     private List<Company> _companies;
 
-    private List<Stock> _stocks;
-
     private Config _config;
+
+    private List<Stock> _stocks;
 
     public MainForm()
     {
@@ -122,9 +121,11 @@ public partial class MainForm : Form
                 return;
             }
 
-            await FazTransferenciaFranquia(false, from.Xpath, produtosDictionary);
-            await FazTransferenciaFranquia(true, to.Xpath, produtosDictionary);
+            var tasks = new Task[2];
+            tasks[0] = Task.Run(() => FazTransferenciaFranquia(false, from.Xpath, produtosDictionary));
+            tasks[1] = Task.Run(() => FazTransferenciaFranquia(true, to.Xpath, produtosDictionary));
 
+            await Task.WhenAll(tasks);
 
             TopMost = true;
 
@@ -166,8 +167,11 @@ public partial class MainForm : Form
                 return;
             }
 
-            await FazTransferenciaDeposito(false, franchise.Xpath, from.XPath, produtosDictionary);
-            await FazTransferenciaDeposito(true, franchise.Xpath, to.XPath, produtosDictionary);
+            var tasks = new Task[2];
+            tasks[0] = Task.Run(() => FazTransferenciaDeposito(false, franchise.Xpath, from.XPath, produtosDictionary));
+            tasks[1] = Task.Run(() => FazTransferenciaDeposito(true, franchise.Xpath, to.XPath, produtosDictionary));
+
+            await Task.WhenAll(tasks);
 
             TopMost = true;
 
@@ -288,24 +292,21 @@ public partial class MainForm : Form
     {
         _productsNotFound.Clear();
 
-        var chromeOptions = new ChromeOptions();
-        chromeOptions.AddExcludedArgument("enable-automation");
+        var chromeDriver = new ChromeDriver();
+        chromeDriver.Manage().Window.Maximize();
 
-        _chromeDriver = new ChromeDriver(chromeOptions);
-        _chromeDriver.Manage().Window.Maximize();
+        chromeDriver.Url = "https://erp.linx.com.br/";
 
-        _chromeDriver.Url = "https://erp.linx.com.br/";
-
-        _chromeDriver.FindElement(By.Id("f_login")).SendKeys(_config.Login);
-        _chromeDriver.FindElement(By.Id("f_senha")).SendKeys(_config.Password);
-        _chromeDriver.FindElement(By.XPath("//*[@id=\"form_login\"]/button[1]")).Click();
+        chromeDriver.FindElement(By.Id("f_login")).SendKeys(_config.Login);
+        chromeDriver.FindElement(By.Id("f_senha")).SendKeys(_config.Password);
+        chromeDriver.FindElement(By.XPath("//*[@id=\"form_login\"]/button[1]")).Click();
 
         while (true)
             try
             {
                 // selecionar empresa
-                _chromeDriver.FindElement(By.XPath(companyXpath)).Click();
-                _chromeDriver.FindElement(By.XPath("//*[@id=\"btnselecionar_empresa\"]")).Click();
+                chromeDriver.FindElement(By.XPath(companyXpath)).Click();
+                chromeDriver.FindElement(By.XPath("//*[@id=\"btnselecionar_empresa\"]")).Click();
                 break;
             }
             catch (Exception)
@@ -318,15 +319,15 @@ public partial class MainForm : Form
             var quantidadeEditavel = quantidade;
 
 
-            _chromeDriver.Url = _config.ProductsLink;
+            chromeDriver.Url = _config.ProductsLink;
 
             while (true)
                 try
                 {
-                    _chromeDriver.FindElement(By.Id("f_conteudo"))
+                    chromeDriver.FindElement(By.Id("f_conteudo"))
                         .SendKeys(codigoBarras); // codigo de barras do produto
-                    _chromeDriver.FindElement(By.XPath("//*[@id=\"campo4\"]")).Click(); // selecionar codigo de barras
-                    _chromeDriver
+                    chromeDriver.FindElement(By.XPath("//*[@id=\"campo4\"]")).Click(); // selecionar codigo de barras
+                    chromeDriver
                         .FindElement(By.XPath("/html/body/table/tbody/tr[4]/td[2]/form/table/tbody/tr/td[3]/input"))
                         .Click(); // Pesquisar
                     break;
@@ -340,13 +341,13 @@ public partial class MainForm : Form
             while (true)
                 try
                 {
-                    _chromeDriver.FindElement(By.XPath("//*[@id=\"AutoNumber4\"]/tbody/tr[3]/td[7]/div[3]"))
+                    chromeDriver.FindElement(By.XPath("//*[@id=\"AutoNumber4\"]/tbody/tr[3]/td[7]/div[3]"))
                         .Click(); // botão alterar saldo
                     break;
                 }
                 catch (Exception)
                 {
-                    if (_chromeDriver.PageSource.Contains(
+                    if (chromeDriver.PageSource.Contains(
                             "Não foram encontrados registros com os critérios de pesquisa especificados."))
                     {
                         if (!_productsNotFound.Contains(codigoBarras)) _productsNotFound.Add(codigoBarras);
@@ -359,7 +360,7 @@ public partial class MainForm : Form
                 try
                 {
                     var quantidadeAtual =
-                        int.Parse(_chromeDriver.FindElement(By.Name("velho_saldo"))
+                        int.Parse(chromeDriver.FindElement(By.Name("velho_saldo"))
                             .GetAttribute("value")); // obtem o saldo atual
 
                     if (!add)
@@ -368,16 +369,16 @@ public partial class MainForm : Form
                         if (quantidadeAtual - quantidade < 0) quantidadeEditavel = quantidadeAtual;
                     }
 
-                    _chromeDriver.FindElement(By.Name("novo_saldo")).Clear(); // limpa o campo de novo saldo
+                    chromeDriver.FindElement(By.Name("novo_saldo")).Clear(); // limpa o campo de novo saldo
 
-                    _chromeDriver.FindElement(By.Name("novo_saldo"))
+                    chromeDriver.FindElement(By.Name("novo_saldo"))
                         .SendKeys(add
                             ? quantidadeAtual + quantidade + "00"
                             : quantidadeAtual - quantidadeEditavel + "00");
 
-                    _chromeDriver.FindElement(By.Name("motivo_ajuste"))
+                    chromeDriver.FindElement(By.Name("motivo_ajuste"))
                         .SendKeys($"Solicitado por e-mail - {_config.Name}"); // motivo do ajuste
-                    _chromeDriver
+                    chromeDriver
                         .FindElement(
                             By.XPath("/html/body/table/tbody/tr[2]/td/form/table/tbody/tr[6]/td[2]/font/input"))
                         .Click(); // Ajustar Quantidade
@@ -385,7 +386,7 @@ public partial class MainForm : Form
 
                     while (true)
                     {
-                        if (_chromeDriver.PageSource.Contains("Confirmação de ajuste de saldo de produtos")) break;
+                        if (chromeDriver.PageSource.Contains("Confirmação de ajuste de saldo de produtos")) break;
 
                         await Task.Delay(100);
                     }
@@ -400,7 +401,7 @@ public partial class MainForm : Form
             End: ;
         }
 
-        _chromeDriver.Quit();
+        chromeDriver.Quit();
     }
 
     private async Task FazTransferenciaDeposito(bool add, string companyXpath, string stockXpath,
@@ -408,24 +409,21 @@ public partial class MainForm : Form
     {
         _productsNotFound.Clear();
 
-        var chromeOptions = new ChromeOptions();
-        chromeOptions.AddExcludedArgument("enable-automation");
+        var chromeDriver = new ChromeDriver();
+        chromeDriver.Manage().Window.Maximize();
 
-        _chromeDriver = new ChromeDriver(chromeOptions);
-        _chromeDriver.Manage().Window.Maximize();
+        chromeDriver.Url = "https://erp.linx.com.br/";
 
-        _chromeDriver.Url = "https://erp.linx.com.br/";
-
-        _chromeDriver.FindElement(By.Id("f_login")).SendKeys(_config.Login);
-        _chromeDriver.FindElement(By.Id("f_senha")).SendKeys(_config.Password);
-        _chromeDriver.FindElement(By.XPath("//*[@id=\"form_login\"]/button[1]")).Click();
+        chromeDriver.FindElement(By.Id("f_login")).SendKeys(_config.Login);
+        chromeDriver.FindElement(By.Id("f_senha")).SendKeys(_config.Password);
+        chromeDriver.FindElement(By.XPath("//*[@id=\"form_login\"]/button[1]")).Click();
 
         while (true)
             try
             {
                 // selecionar empresa
-                _chromeDriver.FindElement(By.XPath(companyXpath)).Click();
-                _chromeDriver.FindElement(By.XPath("//*[@id=\"btnselecionar_empresa\"]")).Click();
+                chromeDriver.FindElement(By.XPath(companyXpath)).Click();
+                chromeDriver.FindElement(By.XPath("//*[@id=\"btnselecionar_empresa\"]")).Click();
                 break;
             }
             catch (Exception)
@@ -437,15 +435,15 @@ public partial class MainForm : Form
         {
             var quantidadeEditavel = quantidade;
 
-            _chromeDriver.Url = _config.ProductsLink;
+            chromeDriver.Url = _config.ProductsLink;
 
             while (true)
                 try
                 {
-                    _chromeDriver.FindElement(By.Id("f_conteudo"))
+                    chromeDriver.FindElement(By.Id("f_conteudo"))
                         .SendKeys(codigoBarras); // codigo de barras do produto
-                    _chromeDriver.FindElement(By.XPath("//*[@id=\"campo4\"]")).Click(); // selecionar codigo de barras
-                    _chromeDriver
+                    chromeDriver.FindElement(By.XPath("//*[@id=\"campo4\"]")).Click(); // selecionar codigo de barras
+                    chromeDriver
                         .FindElement(By.XPath("/html/body/table/tbody/tr[4]/td[2]/form/table/tbody/tr/td[3]/input"))
                         .Click(); // Pesquisar
                     break;
@@ -458,13 +456,13 @@ public partial class MainForm : Form
             while (true)
                 try
                 {
-                    _chromeDriver.FindElement(By.XPath("//*[@id=\"AutoNumber4\"]/tbody/tr[3]/td[7]/div[3]"))
+                    chromeDriver.FindElement(By.XPath("//*[@id=\"AutoNumber4\"]/tbody/tr[3]/td[7]/div[3]"))
                         .Click(); // botão alterar saldo
                     break;
                 }
                 catch (Exception)
                 {
-                    if (_chromeDriver.PageSource.Contains(
+                    if (chromeDriver.PageSource.Contains(
                             "Não foram encontrados registros com os critérios de pesquisa especificados."))
                     {
                         if (!_productsNotFound.Contains(codigoBarras)) _productsNotFound.Add(codigoBarras);
@@ -476,12 +474,12 @@ public partial class MainForm : Form
                 try
                 {
                     // seleciona deposito
-                    _chromeDriver.FindElement(By.XPath(stockXpath)).Click();
+                    chromeDriver.FindElement(By.XPath(stockXpath)).Click();
 
                     await Task.Delay(300);
 
                     var quantidadeAtual =
-                        int.Parse(_chromeDriver.FindElement(By.Name("velho_saldo"))
+                        int.Parse(chromeDriver.FindElement(By.Name("velho_saldo"))
                             .GetAttribute("value")); // obtem o saldo atual
 
                     if (!add)
@@ -490,16 +488,16 @@ public partial class MainForm : Form
                         if (quantidadeAtual - quantidade < 0) quantidadeEditavel = quantidadeAtual;
                     }
 
-                    _chromeDriver.FindElement(By.Name("novo_saldo")).Clear(); // limpa o campo de novo saldo
+                    chromeDriver.FindElement(By.Name("novo_saldo")).Clear(); // limpa o campo de novo saldo
 
-                    _chromeDriver.FindElement(By.Name("novo_saldo"))
+                    chromeDriver.FindElement(By.Name("novo_saldo"))
                         .SendKeys(add
                             ? quantidadeAtual + quantidade + "00"
                             : quantidadeAtual - quantidadeEditavel + "00");
 
-                    _chromeDriver.FindElement(By.Name("motivo_ajuste"))
+                    chromeDriver.FindElement(By.Name("motivo_ajuste"))
                         .SendKeys($"Solicitado por e-mail - {_config.Name}"); // motivo do ajuste
-                    _chromeDriver
+                    chromeDriver
                         .FindElement(
                             By.XPath("/html/body/table/tbody/tr[2]/td/form/table/tbody/tr[6]/td[2]/font/input"))
                         .Click(); // Ajustar Quantidade
@@ -507,7 +505,7 @@ public partial class MainForm : Form
 
                     while (true)
                     {
-                        if (_chromeDriver.PageSource.Contains("Confirmação de ajuste de saldo de produtos")) break;
+                        if (chromeDriver.PageSource.Contains("Confirmação de ajuste de saldo de produtos")) break;
 
                         await Task.Delay(100);
                     }
@@ -522,6 +520,6 @@ public partial class MainForm : Form
             End: ;
         }
 
-        _chromeDriver.Quit();
+        chromeDriver.Quit();
     }
 }

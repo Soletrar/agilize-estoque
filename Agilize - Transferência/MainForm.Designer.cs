@@ -276,7 +276,7 @@
             this.groupBox4.Size = new System.Drawing.Size(345, 200);
             this.groupBox4.TabIndex = 13;
             this.groupBox4.TabStop = false;
-            this.groupBox4.Text = "Adição de estoque";
+            this.groupBox4.Text = "Inclusão de estoque";
             // 
             // btnStartAdicao
             // 
