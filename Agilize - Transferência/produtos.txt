@@ -1,1 +1,1 @@
-﻿7909510566675;1
+﻿codigoBarras;quantidade
